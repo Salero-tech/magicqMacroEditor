@@ -12,16 +12,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  buildWindows:
+  build:
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [ubuntu-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write
-      pull-requests: write
-      repository-projects: write
 
     steps:
       - name: Check-out repository
@@ -49,25 +45,10 @@ jobs:
           enable-plugins: tk-inter
           disable-console: true
 
-      - name: release
-        uses: actions/create-release@v1
-        id: create_release
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
         with:
-          draft: false
-          prerelease: false
-          release_name: release
-          tag_name: release
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-      - name: upload linux artifact
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: |
-            ./*
-          asset_name: ${{ runner.os }} Build
-          asset_content_type: application/gzip
-
+          name: ${{ runner.os }} Build
+          path: |
+            build/*.exe
+            build/*.bin
